@@ -13,6 +13,7 @@ const { totalProjects } = useProjects();
     <AppHeader title="Registro de Atividades" />
 
     <div class="page">
+      <!-- HERO -->
       <div class="hero">
         <h2>Bem-vindo!</h2>
         <p>Registre e acompanhe suas atividades e projetos</p>
@@ -59,43 +60,61 @@ const { totalProjects } = useProjects();
 </template>
 
 <style scoped>
+.page { 
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* HERO */
 .hero {
+  margin-top: 80px;
   text-align: center;
-  margin-bottom: 32px;
 }
 
 .hero h2 {
-  font-size: 24px;
+  font-size: 28px;
+  font-weight: 700;
   margin-bottom: 8px;
   color: var(--text-color);
 }
 
 .hero p {
+  font-size: 16px;
   color: var(--muted-text);
 }
 
+/* STATS */
 .stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 32px;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 20px;
 }
 
 .stat-card {
   background: var(--card-bg);
-  padding: 20px;
-  border-radius: 12px;
+  padding: 24px;
+  border-radius: 16px;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--border-color);
-  transition: background 0.3s ease, border 0.3s ease;
+  transition: transform 0.15s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
 }
 
 .stat-value {
   font-size: 32px;
-  font-weight: bold;
+  font-weight: 700;
   color: #0b5cff;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .stat-label {
@@ -103,29 +122,38 @@ const { totalProjects } = useProjects();
   color: var(--muted-text);
 }
 
+/* MENU */
 .menu {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .menu-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 20px;
-  background: var(--card-bg);
-  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
   text-decoration: none;
   color: var(--text-color);
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-radius: 16px;
+  background: var(--card-bg);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   border: 1px solid var(--border-color);
   transition: 
-    transform 0.1s ease,
+    transform 0.15s ease,
     background 0.3s ease,
-    border 0.3s ease;
+    box-shadow 0.3s ease;
+}
+
+.menu-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.1);
 }
 
 .menu-item:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
 }
 </style>

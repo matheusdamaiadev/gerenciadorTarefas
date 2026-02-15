@@ -77,3 +77,19 @@ function handleSubmit(data) {
     </div>
   </div>
 </template>
+
+<style scoped>
+.page {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: 'Inter', sans-serif;
+}
+.form{
+  margin-top: 80px;
+}
+/* Se desejar, estilos adicionais podem ser aplicados aos formulários internos */
+</style>

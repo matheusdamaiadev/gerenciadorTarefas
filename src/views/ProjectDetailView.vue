@@ -15,7 +15,7 @@ const { getRecordsByProject, deleteRecordsByProject } = useRecords();
 
 const project = computed(() => getProject(projectId));
 const stats = computed(() => getProjectStats(projectId));
-const records = computed(() => getRecordsByProject(projectId));
+const records = computed(() => getRecordsByProject(projectId) || []); // garante array
 
 function handleDelete() {
   if (confirm('Tem certeza que deseja excluir este projeto?')) {
@@ -51,7 +51,20 @@ function handleDelete() {
       </div>
     </div>
 
-    <RecordList :records="records" />
+    <!-- Lista de registros -->
+    <div v-if="records.length > 0">
+      <RecordList :records="records" />
+    </div>
+    <div v-else class="empty">
+      <p>📭</p>
+      <p>Nenhum registro ainda</p>
+      <RouterLink 
+        :to="{ path: '/records/new/edit', query: { projectId } }"
+        class="btn"
+      >
+        Criar primeiro registro
+      </RouterLink>
+    </div>
 
     <div class="actions">
       <RouterLink
@@ -70,28 +83,33 @@ function handleDelete() {
 
 <style scoped>
 .page {
-  padding: 20px;
-  margin-top: 64px; /* espaço para o header fixo */
+  padding: 24px;
+  margin-top: 64px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'Inter', sans-serif;
 }
 
 .project-header {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 24px;
 }
 
 .project-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--text-color);
 }
 
 .subtitle {
   color: var(--muted-text);
+  font-size: 16px;
 }
 
 /* Stats */
@@ -103,11 +121,15 @@ function handleDelete() {
 
 .stat-card {
   text-align: center;
+  background: var(--card-bg);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .stat-value {
   font-size: 24px;
-  font-weight: bold;
+  font-weight: 700;
 }
 
 .stat-label {
@@ -115,29 +137,62 @@ function handleDelete() {
   color: var(--muted-text);
 }
 
-/* Record List */
-a {
-  text-decoration: none; /* remove sublinhado dos links */
-  color: inherit;
+/* Mensagem vazio */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--muted-text);
+  background: var(--card-bg);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.empty p:first-child {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.btn {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 24px;
+  background: #0b5cff;
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 700;
+  transition: transform 0.1s ease, background 0.2s ease;
+}
+
+.btn:hover {
+  background: #094ecf;
+  transform: translateY(-2px);
 }
 
 /* FAB */
 .fab {
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
+  bottom: 28px;
+  right: 28px;
+  width: 60px;
+  height: 60px;
   background: #0b5cff;
   color: white;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 36px;
+  font-weight: bold;
   text-decoration: none;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  transition: transform 0.2s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fab:hover {
+  background: #094ecf;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
 }
 
 .fab:active {
@@ -156,10 +211,10 @@ a {
   background: #ff4d4f;
   color: white;
   border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
+  padding: 10px 20px;
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
   transition: transform 0.1s ease, background 0.2s ease;
 }
 

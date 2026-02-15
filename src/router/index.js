@@ -21,12 +21,6 @@ const routes = [
     name: 'record-edit',
     component: () => import('@/views/RecordFormView.vue'),
   },
-  {
-    path: '/dashboard',
-    name: 'dashboard',
-    component: () => import('@/views/DashboardView.vue'),
-  }, // ✅ vírgula importante aqui
-
   // 🔹 PROJETOS
   {
     path: '/projects',

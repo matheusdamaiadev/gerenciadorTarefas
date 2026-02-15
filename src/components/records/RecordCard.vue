@@ -19,11 +19,10 @@ const formattedDate = computed(() => {
 
 <template>
   <div class="record-card">
-    <h3 class="title">{{ title }}</h3>
-
-    <p class="category">
-      {{ category }}
-    </p>
+    <div class="header">
+      <h3 class="title">{{ title }}</h3>
+      <span class="category">{{ category }}</span>
+    </div>
 
     <div class="meta">
       <span class="duration">⏱️ {{ duration }} min</span>
@@ -35,52 +34,57 @@ const formattedDate = computed(() => {
 <style scoped>
 .record-card {
   background: var(--card-bg);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  transition: 
-    transform 0.1s ease,
-    background 0.3s ease,
-    box-shadow 0.3s ease;
+  border-radius: 16px;
+  padding: 20px 18px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
+  transition: transform 0.15s ease, background 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   border: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.record-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.1);
 }
 
 .record-card:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .title {
   font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-weight: 700;
   color: var(--text-color);
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.meta {
-  display: flex;
-  gap: 16px;
-  font-size: 14px;
-  color: var(--muted-text);
-}
-
 .category {
   font-size: 12px;
   background-color: var(--category-bg);
-  padding: 4px 8px;
+  padding: 4px 10px;
   border-radius: 12px;
-  display: inline-block;
-  margin-bottom: 8px;
   color: var(--text-color);
+  font-weight: 500;
   transition: background 0.3s ease;
+  white-space: nowrap;
 }
 
-.date,
-.duration {
+.meta {
+  display: flex;
+  gap: 20px;
+  font-size: 14px;
   color: var(--muted-text);
 }
 </style>

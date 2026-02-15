@@ -27,7 +27,6 @@ function handleSubmit() {
 
   try {
     const validatedData = schema.parse(form.value);
-
     const project = addProject(validatedData);
 
     router.push({
@@ -54,7 +53,7 @@ function handleSubmit() {
 
     <div class="page">
       <form @submit.prevent="handleSubmit" class="form">
-        
+
         <AppInput
           v-model="form.title"
           label="Nome do Projeto"
@@ -75,7 +74,7 @@ function handleSubmit() {
           ></textarea>
         </div>
 
-        <AppButton type="submit">
+        <AppButton type="submit" class="submit-btn">
           Criar Projeto
         </AppButton>
 
@@ -85,41 +84,50 @@ function handleSubmit() {
 </template>
 
 <style scoped>
+.page {
+  max-width: 700px;
+  margin: 24px auto;
+  padding: 0 16px;
+  font-family: 'Inter', sans-serif;
+}
+
 .form {
+  margin-top: 80px;
   background: var(--card-bg);
-  padding: 20px;
-  border-radius: 12px;
+  padding: 28px 24px;
+  border-radius: 16px;
   border: 1px solid var(--border-color);
-  transition: background 0.3s ease, border 0.3s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
 }
 
 .textarea-group {
-  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .label {
-  display: block;
-  margin-bottom: 6px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-color);
   transition: color 0.3s ease;
 }
 
 .textarea {
   width: 100%;
-  padding: 12px 16px;
+  padding: 14px 16px;
   font-size: 16px;
   border: 2px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
   font-family: inherit;
   resize: vertical;
   background: var(--input-bg);
   color: var(--text-color);
-  transition: 
-    border-color 0.2s ease,
-    background 0.3s ease,
-    color 0.3s ease;
+  transition: border-color 0.2s ease, background 0.3s ease, color 0.3s ease;
 }
 
 .textarea::placeholder {
@@ -134,7 +142,25 @@ function handleSubmit() {
 .error {
   color: #d93025;
   font-size: 14px;
-  margin-top: 4px;
-  margin-bottom: 12px;
+  margin-top: -8px;
+}
+
+.submit-btn {
+  background: #0b5cff;
+  color: white;
+  font-weight: 700;
+  padding: 14px 0;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #094ecf;
+  transform: translateY(-2px);
+}
+
+.submit-btn:active {
+  transform: scale(0.95);
 }
 </style>

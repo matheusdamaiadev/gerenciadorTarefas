@@ -80,26 +80,42 @@ function handleDelete() {
 </template>
 
 <style scoped>
+.page {
+  margin-top: 80px; /* espaço para header fixo */
+  padding: 24px;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  font-family: 'Inter', sans-serif;
+}
+
 .card {
   background: var(--card-bg);
-  border-radius: 12px;
-  padding: 24px;
+  border-radius: 16px;
+  padding: 28px 24px;
   border: 1px solid var(--border-color);
-  transition: background 0.3s ease, border 0.3s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
 }
 
 .title {
   font-size: 24px;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+  font-weight: 700;
   color: var(--text-color);
-
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .info {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .info-item {
@@ -116,10 +132,11 @@ function handleDelete() {
 
 .value {
   color: var(--text-color);
+  font-weight: 500;
 }
 
 .notes {
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   padding-top: 16px;
   border-top: 2px solid var(--border-color);
 }
@@ -127,6 +144,7 @@ function handleDelete() {
 .notes h3 {
   font-size: 16px;
   margin-bottom: 8px;
+  font-weight: 600;
   color: var(--muted-text);
 }
 
@@ -137,7 +155,7 @@ function handleDelete() {
 
 .actions {
   display: flex;
-  flex-direction: column;
   gap: 12px;
+  flex-wrap: wrap;
 }
 </style>

@@ -39,46 +39,52 @@ const value = computed({
 
 <style scoped>
 .app-input {
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .label {
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-color);
   transition: color 0.3s ease;
 }
 
 .required {
   color: #ff4444;
+  margin-left: 2px;
 }
 
 .input {
   width: 100%;
-  min-height: 48px;
-  padding: 12px 16px;
+  min-height: 50px;
+  padding: 14px 16px;
   font-size: 16px;
+  font-weight: 500;
 
   border: 2px solid var(--border-color);
-  border-radius: 8px;
+  border-radius: 12px;
 
   background: var(--input-bg);
   color: var(--text-color);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 
   transition: 
     border-color 0.2s ease,
     background 0.3s ease,
+    box-shadow 0.3s ease,
     color 0.3s ease;
 }
 
 .input::placeholder {
   color: var(--muted-text);
+  opacity: 0.7;
 }
 
 .input:focus {
   outline: none;
   border-color: #0b5cff;
+  box-shadow: 0 6px 20px rgba(11, 92, 255, 0.2);
 }
 </style>

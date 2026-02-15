@@ -49,96 +49,115 @@ const router = useRouter();
     </div>
   </div>
 </template>
-
 <style scoped>
 .page {
-  margin-top: 80px; /* espaço para o header fixo */
-  padding: 20px;
+  margin-top: 80px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 20px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Cards de projeto */
 .project-card {
   background: var(--card-bg);
-  padding: 16px 20px;
-  border-radius: 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   border: 1px solid var(--border-color);
   cursor: pointer;
   transition: 
-    transform 0.1s ease,
+    transform 0.2s ease,
     background 0.3s ease,
     box-shadow 0.3s ease;
   text-decoration: none;
   color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .project-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(0,0,0,0.1);
 }
 
 .project-card:active {
   transform: scale(0.95);
-  transition: transform 0.1s ease;
 }
 
 /* Títulos e meta info */
 .project-title {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text-color);
-  margin-bottom: 6px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .project-meta {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--muted-text);
 }
 
 /* Botão criar projeto desktop */
 .new-project-btn.desktop-btn {
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
   width: 100%;
   display: flex;
   justify-content: center;
+  padding: 14px 0;
+  border-radius: 12px;
+  background: #0b5cff;
+  color: white;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+  transition: transform 0.1s ease, background 0.2s ease;
+}
+
+.new-project-btn.desktop-btn:hover {
+  background: #094ecf;
+  transform: translateY(-2px);
 }
 
 .new-project-btn.desktop-btn:active {
   transform: scale(0.95);
-  transition: transform 0.1s ease;
 }
 
-/* Botão flutuante mobile */
+/* Botão flutuante mobile (FAB) */
 .new-project-btn.mobile-fab {
-  display: none; /* escondido por padrão */
+  display: none;
   position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 56px;
-  height: 56px;
+  bottom: 28px;
+  right: 28px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  font-size: 32px;
+  font-size: 36px;
   padding: 0;
   justify-content: center;
   align-items: center;
   z-index: 100;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
   background: #0b5cff;
   color: white;
   font-weight: bold;
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* efeito de clique */
+.new-project-btn.mobile-fab:hover {
+  background: #094ecf;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.3);
+  transform: translateY(-2px);
+}
+
 .new-project-btn.mobile-fab:active {
   transform: scale(0.9);
-  transition: transform 0.1s ease;
 }
 
 /* Responsividade: mostra a bolinha no mobile e esconde botão grande */
