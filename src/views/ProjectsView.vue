@@ -17,38 +17,56 @@ const router = useRouter();
     />
 
     <div class="page">
-      <!-- Botão criar projeto desktop -->
-      <AppButton 
-        class="new-project-btn desktop-btn"
-        @click="router.push('/projects/create')"
-      >
-        Criar novo projeto
-      </AppButton>
-
-      <!-- Lista de projetos -->
-      <div 
-        v-for="project in projects" 
-        :key="project.id" 
-        class="project-card"
-        @click="router.push(`/projects/${project.id}`)"
-      >
-        <div class="project-title">{{ project.title }}</div>
-        <div class="project-meta">
-          {{ getProjectStats(project.id).totalRecords ?? 0 }} registros •
-          {{ getProjectStats(project.id).totalDuration ?? 0 }} min
-        </div>
+      <!-- Tela vazia -->
+      <div v-if="!projects.length" class="empty-state">
+        <div class="empty-emoji">📁</div>
+        <h2>Você ainda não tem projetos</h2>
+        <p>Crie seu primeiro projeto para começar a registrar atividades!</p>
+        <AppButton 
+          class="new-project-btn empty-btn"
+          @click="router.push('/projects/create')"
+        >
+          Criar Projeto
+        </AppButton>
       </div>
 
-      <!-- Botão flutuante mobile -->
-      <AppButton 
-        class="new-project-btn mobile-fab"
-        @click="router.push('/projects/create')"
-      >
-        +
-      </AppButton>
+      <!-- Lista de projetos -->
+      <div v-else class="projects-list">
+        <!-- Botão criar projeto desktop -->
+        <AppButton 
+          class="new-project-btn desktop-btn"
+          @click="router.push('/projects/create')"
+        >
+          Criar Projeto
+        </AppButton>
+
+        <div class="cards-wrapper">
+          <div 
+            v-for="project in projects" 
+            :key="project.id" 
+            class="project-card"
+            @click="router.push(`/projects/${project.id}`)"
+          >
+            <div class="project-title">{{ project.title }}</div>
+            <div class="project-meta">
+              {{ getProjectStats(project.id).totalRecords ?? 0 }} registros •
+              {{ getProjectStats(project.id).totalDuration ?? 0 }} min
+            </div>
+          </div>
+        </div>
+
+        <!-- Botão flutuante mobile -->
+        <AppButton 
+          class="new-project-btn mobile-fab"
+          @click="router.push('/projects/create')"
+        >
+          +
+        </AppButton>
+      </div>
     </div>
   </div>
 </template>
+
 <style scoped>
 .page {
   margin-top: 80px;
@@ -63,6 +81,13 @@ const router = useRouter();
 }
 
 /* Cards de projeto */
+.cards-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* gap entre os cards */
+  margin-top: 16px; /* espaço entre botão e lista */
+}
+
 .project-card {
   background: var(--card-bg);
   padding: 20px 24px;
@@ -74,8 +99,6 @@ const router = useRouter();
     transform 0.2s ease,
     background 0.3s ease,
     box-shadow 0.3s ease;
-  text-decoration: none;
-  color: inherit;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -90,7 +113,6 @@ const router = useRouter();
   transform: scale(0.95);
 }
 
-/* Títulos e meta info */
 .project-title {
   font-size: 20px;
   font-weight: 700;
@@ -105,32 +127,36 @@ const router = useRouter();
   color: var(--muted-text);
 }
 
-/* Botão criar projeto desktop */
-.new-project-btn.desktop-btn {
+/* Botão criar projeto */
+.new-project-btn {
   font-weight: 700;
   text-align: center;
-  width: 100%;
   display: flex;
   justify-content: center;
-  padding: 14px 0;
   border-radius: 12px;
   background: #0b5cff;
   color: white;
   box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-  transition: transform 0.1s ease, background 0.2s ease;
+  transition: transform 0.1s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.new-project-btn.desktop-btn:hover {
+.new-project-btn:hover {
   background: #094ecf;
   transform: translateY(-2px);
 }
 
-.new-project-btn.desktop-btn:active {
+.new-project-btn:active {
   transform: scale(0.95);
 }
 
-/* Botão flutuante mobile (FAB) */
-.new-project-btn.mobile-fab {
+/* Desktop retangular */
+.desktop-btn {
+  width: 100%;
+  padding: 14px 0;
+}
+
+/* Mobile FAB */
+.mobile-fab {
   display: none;
   position: fixed;
   bottom: 28px;
@@ -143,24 +169,41 @@ const router = useRouter();
   justify-content: center;
   align-items: center;
   z-index: 100;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
-  background: #0b5cff;
-  color: white;
-  font-weight: bold;
-  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
-.new-project-btn.mobile-fab:hover {
-  background: #094ecf;
-  box-shadow: 0 10px 28px rgba(0,0,0,0.3);
-  transform: translateY(-2px);
+/* Tela vazia */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--muted-text);
 }
 
-.new-project-btn.mobile-fab:active {
-  transform: scale(0.9);
+.empty-state h2 {
+  font-size: 22px;
+  color: var(--text-color);
 }
 
-/* Responsividade: mostra a bolinha no mobile e esconde botão grande */
+.empty-state p {
+  font-size: 16px;
+  max-width: 300px;
+}
+
+.empty-emoji {
+  font-size: 60px;
+  margin-bottom: 12px;
+}
+
+.empty-btn {
+  width: 200px;
+  padding: 14px 0;
+}
+
+/* Responsividade */
 @media (max-width: 768px) {
   .desktop-btn {
     display: none !important;
