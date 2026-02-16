@@ -8,13 +8,14 @@ import { useRecords } from '@/composables/useRecords';
 const router = useRouter();
 const route = useRoute();
 
-const { addRecord, getRecord, updateRecord, categories } = useRecords();
+const { addRecord, getRecord, updateRecord, categories, loadRecords } = useRecords();
 
 const isEditMode = computed(() => route.params.id !== 'new');
 
-const projectIdFromQuery = route.query.projectId
-  ? Number(route.query.projectId)
-  : null;
+const parsedProjectId = Number(route.query.projectId);
+const projectIdFromQuery = Number.isNaN(parsedProjectId) ? null : parsedProjectId;
+
+const currentRecord = ref(null);
 
 const form = ref({
   title: '',
@@ -23,10 +24,16 @@ const form = ref({
   category: '',
 });
 
-onMounted(() => {
+onMounted(async () => {
   if (isEditMode.value) {
+    if (!getRecord(route.params.id)) {
+      await loadRecords();
+    }
+
     const record = getRecord(route.params.id);
+
     if (record) {
+      currentRecord.value = record;
       form.value = {
         title: record.title,
         duration: record.duration,
@@ -39,20 +46,40 @@ onMounted(() => {
   }
 });
 
-function handleSubmit(data) {
-  const recordData = {
-    ...data,
-    projectId: projectIdFromQuery ?? null
-  };
-
-  if (isEditMode.value) {
-    updateRecord(route.params.id, recordData);
-  } else {
-    addRecord(recordData);
+function resolveRedirectProjectId(updatedOrCreatedRecord) {
+  if (projectIdFromQuery !== null) {
+    return projectIdFromQuery;
   }
 
-  if (projectIdFromQuery) {
-    router.push(`/projects/${projectIdFromQuery}`);
+  if (updatedOrCreatedRecord?.projectId !== null && updatedOrCreatedRecord?.projectId !== undefined) {
+    return updatedOrCreatedRecord.projectId;
+  }
+
+  if (currentRecord.value?.projectId !== null && currentRecord.value?.projectId !== undefined) {
+    return currentRecord.value.projectId;
+  }
+
+  return null;
+}
+
+async function handleSubmit(data) {
+  const recordData = {
+    ...data,
+    projectId: projectIdFromQuery ?? currentRecord.value?.projectId ?? null,
+  };
+
+  const result = isEditMode.value
+    ? await updateRecord(route.params.id, recordData)
+    : await addRecord(recordData);
+
+  if (!result) {
+    return;
+  }
+
+  const redirectProjectId = resolveRedirectProjectId(result);
+
+  if (redirectProjectId !== null) {
+    router.push(`/projects/${redirectProjectId}`);
   } else {
     router.push('/records');
   }
@@ -88,8 +115,7 @@ function handleSubmit(data) {
   gap: 24px;
   font-family: 'Inter', sans-serif;
 }
-.form{
+.form {
   margin-top: 80px;
 }
-/* Se desejar, estilos adicionais podem ser aplicados aos formulários internos */
 </style>

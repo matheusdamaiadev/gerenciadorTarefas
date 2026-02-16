@@ -1,54 +1,81 @@
 <script setup>
 import { computed, onMounted } from 'vue';
-import { useRoute, useRouter, RouterLink } from 'vue-router';
-import AppHeader from '@/components/layout/AppHeader.vue';
-import RecordList from '@/components/records/RecordList.vue';
+import { useRoute, useRouter } from 'vue-router';
 
-import { useProjectsStore } from '@/stores/projects';
+import AppHeader from '@/components/layout/AppHeader.vue';
+import AppButton from '@/components/forms/AppButton.vue';
 import { useRecordsStore } from '@/stores/records';
 
 const route = useRoute();
 const router = useRouter();
-
-const projectId = Number(route.params.id);
-
-const projectsStore = useProjectsStore();
 const recordsStore = useRecordsStore();
 
+const recordId = computed(() => route.params.id);
+
 onMounted(async () => {
-  await projectsStore.fetchProjects();
-  await recordsStore.fetchRecords();
+  if (recordsStore.records.length === 0) {
+    await recordsStore.loadRecords();
+  }
 });
 
-const project = computed(() =>
-  projectsStore.getProject(projectId)
-);
+const record = computed(() => recordsStore.getRecord(recordId.value));
 
-const stats = computed(() =>
-  projectsStore.getProjectStats(projectId)
-);
+function formatDate(date) {
+  if (!date) {
+    return '-';
+  }
 
-const records = computed(() =>
-  recordsStore.records.filter(
-    (r) => r.project_id === projectId
-  )
-);
+  return new Date(date).toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  });
+}
+
+function handleEdit() {
+  if (!record.value) {
+    return;
+  }
+
+  const query = record.value.projectId !== null && record.value.projectId !== undefined
+    ? { projectId: record.value.projectId }
+    : undefined;
+
+  router.push({
+    path: `/records/${record.value.id}/edit`,
+    query,
+  });
+}
 
 async function handleDelete() {
-  if (confirm('Tem certeza que deseja excluir este projeto?')) {
-    await recordsStore.deleteRecordsByProject(projectId);
-    await projectsStore.deleteProject(projectId);
-    router.push('/projects');
+  if (!record.value) {
+    return;
   }
+
+  const shouldDelete = confirm('Tem certeza que deseja excluir este registro?');
+
+  if (!shouldDelete) {
+    return;
+  }
+
+  const projectId = record.value.projectId;
+
+  await recordsStore.deleteRecord(record.value.id);
+
+  if (projectId) {
+    router.push(`/projects/${projectId}`);
+    return;
+  }
+
+  router.push('/records');
 }
 </script>
 
-
 <template>
-  <div v-if="record">
-    <AppHeader title="Detalhes" show-back @back="router.back()" />
+  <div>
+    <AppHeader title="Detalhes do registro" show-back @back="router.back()" />
 
-    <div class="page">
+    <div v-if="record" class="page">
       <div class="card">
         <h1 class="title">{{ record.title }}</h1>
 
@@ -64,8 +91,13 @@ async function handleDelete() {
           </div>
 
           <div class="info-item">
-            <span class="label">📅 Data:</span>
+            <span class="label">📅 Criado em:</span>
             <span class="value">{{ formatDate(record.createdAt) }}</span>
+          </div>
+
+          <div v-if="record.updatedAt" class="info-item">
+            <span class="label">🛠️ Atualizado em:</span>
+            <span class="value">{{ formatDate(record.updatedAt) }}</span>
           </div>
         </div>
 
@@ -76,10 +108,19 @@ async function handleDelete() {
 
         <div class="actions">
           <AppButton @click="handleEdit">Editar</AppButton>
-          <AppButton variant="danger" @click="handleDelete">
-            Excluir
-          </AppButton>
+          <AppButton variant="danger" @click="handleDelete">Excluir</AppButton>
         </div>
+      </div>
+    </div>
+
+    <div v-else class="not-found page">
+      <div class="card">
+        <h2>Registro não encontrado</h2>
+        <p>
+          O registro solicitado não existe ou você não tem permissão para visualizá-lo.
+        </p>
+
+        <AppButton @click="router.push('/records')">Voltar para registros</AppButton>
       </div>
     </div>
   </div>
@@ -87,7 +128,7 @@ async function handleDelete() {
 
 <style scoped>
 .page {
-  margin-top: 80px; /* espaço para header fixo */
+  margin-top: 80px;
   padding: 24px;
   max-width: 800px;
   margin-left: auto;
@@ -103,7 +144,7 @@ async function handleDelete() {
   border-radius: 16px;
   padding: 28px 24px;
   border: 1px solid var(--border-color);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
   transition: background 0.3s ease, border 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -129,6 +170,7 @@ async function handleDelete() {
   justify-content: space-between;
   padding: 12px 0;
   border-bottom: 1px solid var(--border-color);
+  gap: 12px;
 }
 
 .label {
@@ -139,6 +181,7 @@ async function handleDelete() {
 .value {
   color: var(--text-color);
   font-weight: 500;
+  text-align: right;
 }
 
 .notes {
@@ -163,5 +206,14 @@ async function handleDelete() {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.not-found h2 {
+  margin-bottom: 12px;
+}
+
+.not-found p {
+  margin-bottom: 20px;
+  color: var(--muted-text);
 }
 </style>

@@ -1,11 +1,19 @@
 <script setup>
+import { onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import { useRecords } from '@/composables/useRecords';
 import { useProjects } from '@/composables/useProjects';
 
-const { totalRecords, totalDuration } = useRecords();
-const { totalProjects } = useProjects();
+const recordsStore = useRecords();
+const projectsStore = useProjects();
+
+const { totalRecords, totalDuration, loadRecords } = recordsStore;
+const { totalProjects, fetchProjects } = projectsStore;
+
+onMounted(async () => {
+  await Promise.all([loadRecords(), fetchProjects()]);
+});
 </script>
 
 <template>
@@ -60,7 +68,7 @@ const { totalProjects } = useProjects();
 </template>
 
 <style scoped>
-.page { 
+.page {
   max-width: 900px;
   margin: 0 auto;
   padding: 24px;
@@ -142,7 +150,7 @@ const { totalProjects } = useProjects();
   background: var(--card-bg);
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   border: 1px solid var(--border-color);
-  transition: 
+  transition:
     transform 0.15s ease,
     background 0.3s ease,
     box-shadow 0.3s ease;
