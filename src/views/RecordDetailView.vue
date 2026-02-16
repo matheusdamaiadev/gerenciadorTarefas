@@ -1,42 +1,48 @@
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { computed, onMounted } from 'vue';
+import { useRoute, useRouter, RouterLink } from 'vue-router';
 import AppHeader from '@/components/layout/AppHeader.vue';
-import AppButton from '@/components/forms/AppButton.vue';
-import { useRecords } from '@/composables/useRecords';
+import RecordList from '@/components/records/RecordList.vue';
 
-const router = useRouter();
+import { useProjectsStore } from '@/stores/projects';
+import { useRecordsStore } from '@/stores/records';
+
 const route = useRoute();
-const { getRecord, deleteRecord } = useRecords();
+const router = useRouter();
 
-const record = ref(null);
+const projectId = Number(route.params.id);
 
-onMounted(() => {
-  record.value = getRecord(route.params.id);
-  if (!record.value) {
-    router.push('/records');
-  }
+const projectsStore = useProjectsStore();
+const recordsStore = useRecordsStore();
+
+onMounted(async () => {
+  await projectsStore.fetchProjects();
+  await recordsStore.fetchRecords();
 });
 
-function formatDate(isoDate) {
-  return new Date(isoDate).toLocaleDateString('pt-BR', {
-    day: '2-digit',
-    month: 'long',
-    year: 'numeric',
-  });
-}
+const project = computed(() =>
+  projectsStore.getProject(projectId)
+);
 
-function handleEdit() {
-  router.push(`/records/${route.params.id}/edit`);
-}
+const stats = computed(() =>
+  projectsStore.getProjectStats(projectId)
+);
 
-function handleDelete() {
-  if (confirm('Deseja realmente excluir este registro?')) {
-    deleteRecord(route.params.id);
-    router.push('/records');
+const records = computed(() =>
+  recordsStore.records.filter(
+    (r) => r.project_id === projectId
+  )
+);
+
+async function handleDelete() {
+  if (confirm('Tem certeza que deseja excluir este projeto?')) {
+    await recordsStore.deleteRecordsByProject(projectId);
+    await projectsStore.deleteProject(projectId);
+    router.push('/projects');
   }
 }
 </script>
+
 
 <template>
   <div v-if="record">

@@ -4,44 +4,57 @@ import { useRouter } from 'vue-router';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppInput from '@/components/forms/AppInput.vue';
 import AppButton from '@/components/forms/AppButton.vue';
-import { useProjects } from '@/composables/useProjects';
+import { useProjectsStore } from '@/stores/projects';
 import { z } from 'zod';
 
 const router = useRouter();
-const { addProject } = useProjects();
+const projectsStore = useProjectsStore();
 
 const form = ref({
   title: '',
   description: '',
 });
 
+const errors = ref({});
+const loading = ref(false);
+
 const schema = z.object({
   title: z.string().min(3, 'Mínimo 3 caracteres'),
   description: z.string().optional(),
 });
 
-const errors = ref({});
-
-function handleSubmit() {
+async function handleSubmit() {
   errors.value = {};
+  loading.value = true;
 
   try {
     const validatedData = schema.parse(form.value);
-    const project = addProject(validatedData);
+
+    const project = await projectsStore.addProject({
+      title: validatedData.title,
+      description: validatedData.description,
+    });
 
     router.push({
       name: 'project-detail',
       params: { id: project.id },
     });
+
   } catch (err) {
     if (err.issues) {
       err.issues.forEach((e) => {
         errors.value[e.path[0]] = e.message;
       });
+    } else {
+      console.error(err);
+      alert('Erro ao criar projeto.');
     }
+  } finally {
+    loading.value = false;
   }
 }
 </script>
+
 
 <template>
   <div>

@@ -1,11 +1,17 @@
 <script setup>
+import { onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import AppButton from '@/components/forms/AppButton.vue';
-import { useProjects } from '@/composables/useProjects';
-import { useRouter } from 'vue-router';
+import { useProjectsStore } from '@/stores/projects';
 
-const { projects, getProjectStats } = useProjects();
 const router = useRouter();
+const projectsStore = useProjectsStore();
+
+// Carrega projetos ao entrar na tela
+onMounted(async () => {
+  await projectsStore.fetchProjects();
+});
 </script>
 
 <template>
@@ -18,10 +24,11 @@ const router = useRouter();
 
     <div class="page">
       <!-- Tela vazia -->
-      <div v-if="!projects.length" class="empty-state">
+      <div v-if="!projectsStore.projects.length" class="empty-state">
         <div class="empty-emoji">📁</div>
         <h2>Você ainda não tem projetos</h2>
         <p>Crie seu primeiro projeto para começar a registrar atividades!</p>
+
         <AppButton 
           class="new-project-btn empty-btn"
           @click="router.push('/projects/create')"
@@ -32,6 +39,7 @@ const router = useRouter();
 
       <!-- Lista de projetos -->
       <div v-else class="projects-list">
+
         <!-- Botão criar projeto desktop -->
         <AppButton 
           class="new-project-btn desktop-btn"
@@ -42,15 +50,18 @@ const router = useRouter();
 
         <div class="cards-wrapper">
           <div 
-            v-for="project in projects" 
+            v-for="project in projectsStore.projects" 
             :key="project.id" 
             class="project-card"
             @click="router.push(`/projects/${project.id}`)"
           >
-            <div class="project-title">{{ project.title }}</div>
+            <div class="project-title">
+              {{ project.title }}
+            </div>
+
             <div class="project-meta">
-              {{ getProjectStats(project.id).totalRecords ?? 0 }} registros •
-              {{ getProjectStats(project.id).totalDuration ?? 0 }} min
+              {{ projectsStore.getProjectStats(project.id).totalRecords ?? 0 }} registros •
+              {{ projectsStore.getProjectStats(project.id).totalDuration ?? 0 }} min
             </div>
           </div>
         </div>
@@ -80,12 +91,11 @@ const router = useRouter();
   font-family: 'Inter', sans-serif;
 }
 
-/* Cards de projeto */
 .cards-wrapper {
   display: flex;
   flex-direction: column;
-  gap: 16px; /* gap entre os cards */
-  margin-top: 16px; /* espaço entre botão e lista */
+  gap: 16px;
+  margin-top: 16px;
 }
 
 .project-card {
@@ -127,7 +137,6 @@ const router = useRouter();
   color: var(--muted-text);
 }
 
-/* Botão criar projeto */
 .new-project-btn {
   font-weight: 700;
   text-align: center;
@@ -149,13 +158,11 @@ const router = useRouter();
   transform: scale(0.95);
 }
 
-/* Desktop retangular */
 .desktop-btn {
   width: 100%;
   padding: 14px 0;
 }
 
-/* Mobile FAB */
 .mobile-fab {
   display: none;
   position: fixed;
@@ -171,7 +178,6 @@ const router = useRouter();
   z-index: 100;
 }
 
-/* Tela vazia */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -203,7 +209,6 @@ const router = useRouter();
   padding: 14px 0;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
   .desktop-btn {
     display: none !important;
