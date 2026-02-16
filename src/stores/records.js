@@ -50,6 +50,11 @@ export const useRecordsStore = defineStore('records', () => {
   // 🔹 Criar
   async function addRecord(record) {
     const authStore = useAuthStore();
+
+    if (!authStore.user) {
+      await authStore.loadUser();
+    }
+
     const user = authStore.user;
 
     if (!user) {
@@ -82,11 +87,11 @@ export const useRecordsStore = defineStore('records', () => {
 
   // 🔹 Buscar por ID (UUID → NÃO usar parseInt)
   function getRecord(id) {
-    return records.value.find(r => r.id === id);
+    return records.value.find((r) => String(r.id) === String(id));
   }
 
   function getRecordsByProject(projectId) {
-    return records.value.filter(r => r.projectId === projectId);
+    return records.value.filter((r) => Number(r.projectId) === Number(projectId));
   }
 
   function getLooseRecords() {
@@ -114,7 +119,7 @@ export const useRecordsStore = defineStore('records', () => {
     }
 
     const updated = mapRecord(data);
-    const index = records.value.findIndex(r => r.id === id);
+    const index = records.value.findIndex((r) => String(r.id) === String(id));
 
     if (index !== -1) {
       records.value[index] = updated;
@@ -135,7 +140,7 @@ export const useRecordsStore = defineStore('records', () => {
       return;
     }
 
-    records.value = records.value.filter(r => r.id !== id);
+    records.value = records.value.filter((r) => String(r.id) !== String(id));
   }
 
   async function deleteRecordsByProject(projectId) {
@@ -150,7 +155,7 @@ export const useRecordsStore = defineStore('records', () => {
     }
 
     records.value = records.value.filter(
-      r => r.projectId !== projectId
+      (r) => Number(r.projectId) !== Number(projectId)
     );
   }
 
