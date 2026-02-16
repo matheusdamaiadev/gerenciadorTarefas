@@ -1,5 +1,12 @@
 <script setup>
-// Não precisa de lógica aqui
+import { onMounted } from 'vue';
+import { useRecordsStore } from '@/stores/records';
+
+const recordsStore = useRecordsStore();
+
+onMounted(() => {
+  recordsStore.loadRecords();
+});
 </script>
 
 <template>

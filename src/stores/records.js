@@ -1,101 +1,147 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
+import { supabase } from '@/lib/supabase';
 
-const STORAGE_KEY = 'records';
 const categories = ['Estudo', 'Trabalho', 'Exercício', 'Lazer'];
 
 export const useRecordsStore = defineStore('records', () => {
   const records = ref([]);
-  const hasLoaded = ref(false);
+  const loading = ref(false);
 
-  function loadFromStorage() {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      records.value = JSON.parse(stored);
+  // 🔹 Carregar do Supabase
+  async function loadRecords() {
+    loading.value = true;
+
+    const { data, error } = await supabase
+      .from('records')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Erro ao carregar registros:', error);
+    } else {
+      records.value = data.map(r => ({
+        id: r.id,
+        title: r.title,
+        duration: r.duration,
+        projectId: r.project_id,
+        createdAt: r.created_at,
+      }));
     }
-    hasLoaded.value = true;
-  }
 
-  function saveToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records.value));
-  }
-
-  function ensureLoaded() {
-    if (!hasLoaded.value) {
-      loadFromStorage();
-    }
+    loading.value = false;
   }
 
   const totalRecords = computed(() => records.value.length);
 
-  const totalDuration = computed(() => {
-    ensureLoaded();
-    return records.value.reduce((sum, r) => sum + r.duration, 0);
-  });
+  const totalDuration = computed(() =>
+    records.value.reduce((sum, r) => sum + r.duration, 0)
+  );
 
-  function addRecord(record) {
-    ensureLoaded();
+  // 🔹 Criar registro
+  async function addRecord(record) {
+    const { data, error } = await supabase
+      .from('records')
+      .insert([{
+        title: record.title,
+        duration: record.duration,
+        project_id: record.projectId ?? null
+      }])
+      .select();
+
+    if (error) {
+      console.error('Erro ao criar registro:', error);
+      return null;
+    }
+
     const newRecord = {
-      id: Date.now(),
-      projectId: record.projectId ?? null,
-      ...record,
-      createdAt: new Date().toISOString(),
+      id: data[0].id,
+      title: data[0].title,
+      duration: data[0].duration,
+      projectId: data[0].project_id,
+      createdAt: data[0].created_at,
     };
 
     records.value.unshift(newRecord);
-    saveToStorage();
     return newRecord;
   }
 
   function getRecord(id) {
-    ensureLoaded();
-    return records.value.find((r) => r.id === parseInt(id));
+    return records.value.find(r => r.id === parseInt(id));
   }
 
   function getRecordsByProject(projectId) {
-    ensureLoaded();
-    return records.value.filter((r) => r.projectId === parseInt(projectId));
+    return records.value.filter(
+      r => r.projectId === parseInt(projectId)
+    );
   }
 
   function getLooseRecords() {
-    ensureLoaded();
-    return records.value.filter((r) => r.projectId === null);
+    return records.value.filter(r => r.projectId === null);
   }
 
-  function updateRecord(id, updates) {
-    ensureLoaded();
-    const index = records.value.findIndex((r) => r.id === parseInt(id));
+  // 🔹 Atualizar
+  async function updateRecord(id, updates) {
+    const { error } = await supabase
+      .from('records')
+      .update({
+        title: updates.title,
+        duration: updates.duration
+      })
+      .eq('id', id);
 
+    if (error) {
+      console.error('Erro ao atualizar:', error);
+      return null;
+    }
+
+    const index = records.value.findIndex(r => r.id === parseInt(id));
     if (index !== -1) {
       records.value[index] = {
         ...records.value[index],
-        ...updates,
-        updatedAt: new Date().toISOString(),
+        ...updates
       };
-
-      saveToStorage();
       return records.value[index];
     }
 
     return null;
   }
 
-  function deleteRecord(id) {
-    ensureLoaded();
-    records.value = records.value.filter((r) => r.id !== parseInt(id));
-    saveToStorage();
+  // 🔹 Deletar
+  async function deleteRecord(id) {
+    const { error } = await supabase
+      .from('records')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao deletar:', error);
+      return;
+    }
+
+    records.value = records.value.filter(r => r.id !== parseInt(id));
   }
 
-  function deleteRecordsByProject(projectId) {
-    ensureLoaded();
-    records.value = records.value.filter((r) => r.projectId !== parseInt(projectId));
-    saveToStorage();
-  }
+  async function deleteRecordsByProject(projectId) {
+    const { error } = await supabase
+      .from('records')
+      .delete()
+      .eq('project_id', projectId);
 
-  ensureLoaded();
+    if (error) {
+      console.error('Erro ao deletar registros do projeto:', error);
+      return;
+    }
+
+    records.value = records.value.filter(
+      r => r.projectId !== parseInt(projectId)
+    );
+  }
 
   return {
     records,
+    loading,
+    loadRecords,
     totalRecords,
     totalDuration,
     addRecord,
@@ -108,3 +154,4 @@ export const useRecordsStore = defineStore('records', () => {
     categories,
   };
 });
+  
