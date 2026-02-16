@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { defineStore } from 'pinia';
 import { supabase } from '@/lib/supabase';
+import { useAuthStore } from '@/stores/auth';
 
 const categories = ['Estudo', 'Trabalho', 'Exercício', 'Lazer'];
 
@@ -8,7 +9,21 @@ export const useRecordsStore = defineStore('records', () => {
   const records = ref([]);
   const loading = ref(false);
 
-  // 🔹 Carregar do Supabase
+  // 🔹 Mapper (mantém seu frontend intacto)
+  function mapRecord(r) {
+    return {
+      id: r.id,
+      title: r.title,
+      category: r.category,
+      duration: r.duration,
+      notes: r.notes,
+      projectId: r.project_id,
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
+    };
+  }
+
+  // 🔹 Carregar
   async function loadRecords() {
     loading.value = true;
 
@@ -20,13 +35,7 @@ export const useRecordsStore = defineStore('records', () => {
     if (error) {
       console.error('Erro ao carregar registros:', error);
     } else {
-      records.value = data.map(r => ({
-        id: r.id,
-        title: r.title,
-        duration: r.duration,
-        projectId: r.project_id,
-        createdAt: r.created_at,
-      }));
+      records.value = data.map(mapRecord);
     }
 
     loading.value = false;
@@ -38,42 +47,46 @@ export const useRecordsStore = defineStore('records', () => {
     records.value.reduce((sum, r) => sum + r.duration, 0)
   );
 
-  // 🔹 Criar registro
+  // 🔹 Criar
   async function addRecord(record) {
+    const authStore = useAuthStore();
+    const user = authStore.user;
+
+    if (!user) {
+      console.error('Usuário não autenticado');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('records')
       .insert([{
         title: record.title,
+        category: record.category,
         duration: record.duration,
-        project_id: record.projectId ?? null
+        notes: record.notes ?? null,
+        project_id: record.projectId ?? null,
+        user_id: user.id
       }])
-      .select();
+      .select()
+      .single();
 
     if (error) {
       console.error('Erro ao criar registro:', error);
       return null;
     }
 
-    const newRecord = {
-      id: data[0].id,
-      title: data[0].title,
-      duration: data[0].duration,
-      projectId: data[0].project_id,
-      createdAt: data[0].created_at,
-    };
-
+    const newRecord = mapRecord(data);
     records.value.unshift(newRecord);
     return newRecord;
   }
 
+  // 🔹 Buscar por ID (UUID → NÃO usar parseInt)
   function getRecord(id) {
-    return records.value.find(r => r.id === parseInt(id));
+    return records.value.find(r => r.id === id);
   }
 
   function getRecordsByProject(projectId) {
-    return records.value.filter(
-      r => r.projectId === parseInt(projectId)
-    );
+    return records.value.filter(r => r.projectId === projectId);
   }
 
   function getLooseRecords() {
@@ -82,29 +95,32 @@ export const useRecordsStore = defineStore('records', () => {
 
   // 🔹 Atualizar
   async function updateRecord(id, updates) {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('records')
       .update({
         title: updates.title,
-        duration: updates.duration
+        category: updates.category,
+        duration: updates.duration,
+        notes: updates.notes,
+        updated_at: new Date().toISOString()
       })
-      .eq('id', id);
+      .eq('id', id)
+      .select()
+      .single();
 
     if (error) {
       console.error('Erro ao atualizar:', error);
       return null;
     }
 
-    const index = records.value.findIndex(r => r.id === parseInt(id));
+    const updated = mapRecord(data);
+    const index = records.value.findIndex(r => r.id === id);
+
     if (index !== -1) {
-      records.value[index] = {
-        ...records.value[index],
-        ...updates
-      };
-      return records.value[index];
+      records.value[index] = updated;
     }
 
-    return null;
+    return updated;
   }
 
   // 🔹 Deletar
@@ -119,7 +135,7 @@ export const useRecordsStore = defineStore('records', () => {
       return;
     }
 
-    records.value = records.value.filter(r => r.id !== parseInt(id));
+    records.value = records.value.filter(r => r.id !== id);
   }
 
   async function deleteRecordsByProject(projectId) {
@@ -134,7 +150,7 @@ export const useRecordsStore = defineStore('records', () => {
     }
 
     records.value = records.value.filter(
-      r => r.projectId !== parseInt(projectId)
+      r => r.projectId !== projectId
     );
   }
 
@@ -154,4 +170,3 @@ export const useRecordsStore = defineStore('records', () => {
     categories,
   };
 });
-  

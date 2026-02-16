@@ -1,10 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import { useAuthStore } from '@/stores/auth';
 
 const routes = [
   {
     path: '/',
     name: 'home',
     component: () => import('@/views/HomeView.vue'),
+  },
+  {
+    path: '/login',
+    name: 'login',
+    component: () => import('@/views/LoginView.vue'),
   },
   {
     path: '/records',
@@ -21,7 +27,6 @@ const routes = [
     name: 'record-edit',
     component: () => import('@/views/RecordFormView.vue'),
   },
-  // 🔹 PROJETOS
   {
     path: '/projects',
     name: 'projects',
@@ -42,6 +47,19 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+});
+
+router.beforeEach(async (to, from, next) => {
+  const authStore = useAuthStore();
+  await authStore.loadUser();
+
+  if (!authStore.user && to.name !== 'login') {
+    next({ name: 'login' });
+  } else if (authStore.user && to.name === 'login') {
+    next({ name: 'home' });
+  } else {
+    next();
+  }
 });
 
 export default router;
