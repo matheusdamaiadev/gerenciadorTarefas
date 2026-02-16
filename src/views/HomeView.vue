@@ -1,11 +1,22 @@
 <script setup>
 import { RouterLink } from 'vue-router';
+import { onMounted } from 'vue';
 import AppHeader from '@/components/layout/AppHeader.vue';
-import { useRecords } from '@/composables/useRecords';
-import { useProjects } from '@/composables/useProjects';
+import { useRecordsStore } from '@/stores/records';
+import { useProjectsStore } from '@/stores/projects';
 
-const { totalRecords, totalDuration } = useRecords();
-const { totalProjects } = useProjects();
+const recordsStore = useRecordsStore();
+const projectsStore = useProjectsStore();
+
+// Carregar dados ao montar a Home
+onMounted(async () => {
+  if (recordsStore.records.length === 0) {
+    await recordsStore.loadRecords(); // garante que registros estão carregados
+  }
+  if (projectsStore.projects.length === 0) {
+    await projectsStore.fetchProjects(); // garante que projetos estão carregados
+  }
+});
 </script>
 
 <template>
@@ -22,17 +33,19 @@ const { totalProjects } = useProjects();
       <!-- STATS -->
       <div class="stats">
         <div class="stat-card">
-          <div class="stat-value">{{ totalRecords }}</div>
+          <div class="stat-value">{{ recordsStore.records.length }}</div>
           <div class="stat-label">Registros</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-value">{{ totalDuration }}</div>
+          <div class="stat-value">
+            {{ recordsStore.records.reduce((sum, r) => sum + r.duration, 0) }}
+          </div>
           <div class="stat-label">Minutos</div>
         </div>
 
         <div class="stat-card">
-          <div class="stat-value">{{ totalProjects }}</div>
+          <div class="stat-value">{{ projectsStore.projects.length }}</div>
           <div class="stat-label">Projetos</div>
         </div>
       </div>
