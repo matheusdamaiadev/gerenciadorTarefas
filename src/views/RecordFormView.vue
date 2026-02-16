@@ -12,6 +12,7 @@ const { addRecord, getRecord, updateRecord, categories, loadRecords } = useRecor
 
 const isEditMode = computed(() => route.params.id !== 'new');
 
+// Pega o projectId da query (pode ser null)
 const parsedProjectId = Number(route.query.projectId);
 const projectIdFromQuery = Number.isNaN(parsedProjectId) ? null : parsedProjectId;
 
@@ -37,7 +38,7 @@ onMounted(async () => {
         category: record.category || '',
       };
     } else {
-      router.push('/records');
+      router.push('/records'); // registro não encontrado
     }
   }
 });
@@ -52,10 +53,18 @@ async function handleSubmit(data) {
     ? await updateRecord(route.params.id, recordData)
     : await addRecord(recordData);
 
-  if (!result) {
-    return;
-  }
+  if (!result) return;
 
+  // Redireciona para o projeto se existir, senão para registros
+  if (projectIdFromQuery) {
+    router.push(`/projects/${projectIdFromQuery}`);
+  } else {
+    router.push('/records');
+  }
+}
+
+// Novo handleBack que respeita projectId
+function handleBack() {
   if (projectIdFromQuery) {
     router.push(`/projects/${projectIdFromQuery}`);
   } else {
@@ -69,7 +78,7 @@ async function handleSubmit(data) {
     <AppHeader
       :title="isEditMode ? 'Editar Registro' : 'Novo Registro'"
       show-back
-      @back="router.back()"
+      @back="handleBack"
     />
 
     <div class="page">

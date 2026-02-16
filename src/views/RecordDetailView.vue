@@ -21,10 +21,7 @@ onMounted(async () => {
 const record = computed(() => recordsStore.getRecord(recordId.value));
 
 function formatDate(date) {
-  if (!date) {
-    return '-';
-  }
-
+  if (!date) return '-';
   return new Date(date).toLocaleDateString('pt-BR', {
     day: '2-digit',
     month: 'long',
@@ -32,24 +29,21 @@ function formatDate(date) {
   });
 }
 
+// Passa o projectId para a página de edição
 function handleEdit() {
-  if (!record.value) {
-    return;
-  }
+  if (!record.value) return;
 
-  router.push(`/records/${record.value.id}/edit`);
+  router.push({
+    path: `/records/${record.value.id}/edit`,
+    query: { projectId: record.value.projectId || '' },
+  });
 }
 
 async function handleDelete() {
-  if (!record.value) {
-    return;
-  }
+  if (!record.value) return;
 
   const shouldDelete = confirm('Tem certeza que deseja excluir este registro?');
-
-  if (!shouldDelete) {
-    return;
-  }
+  if (!shouldDelete) return;
 
   const projectId = record.value.projectId;
 
@@ -57,16 +51,24 @@ async function handleDelete() {
 
   if (projectId) {
     router.push(`/projects/${projectId}`);
-    return;
+  } else {
+    router.push('/records');
   }
+}
 
-  router.push('/records');
+// Botão de voltar respeitando projectId
+function handleBack() {
+  if (record.value?.projectId) {
+    router.push(`/projects/${record.value.projectId}`);
+  } else {
+    router.push('/records');
+  }
 }
 </script>
 
 <template>
   <div>
-    <AppHeader title="Detalhes do registro" show-back @back="router.back()" />
+    <AppHeader title="Detalhes do registro" show-back @back="handleBack" />
 
     <div v-if="record" class="page">
       <div class="card">
