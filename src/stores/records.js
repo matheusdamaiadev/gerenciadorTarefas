@@ -50,6 +50,11 @@ export const useRecordsStore = defineStore('records', () => {
   // 🔹 Criar
   async function addRecord(record) {
     const authStore = useAuthStore();
+
+    if (!authStore.user) {
+      await authStore.loadUser();
+    }
+
     const user = authStore.user;
 
     if (!user) {
