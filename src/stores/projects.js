@@ -71,16 +71,28 @@ export const useProjectsStore = defineStore('projects', () => {
   }
 
   // ==============================
-  // 🔹 Buscar projeto por ID (state only)
+  // 🔹 Buscar projeto por ID
   // ==============================
-  function getProject(id) {
-    const parsedId = Number(id)
+  async function getProject(id) {
+    const parsedId = parseInt(id)
 
-    if (Number.isNaN(parsedId)) {
+    // Primeiro tenta no state
+    let project = projects.value.find(p => p.id === parsedId)
+    if (project) return project
+
+    // Se não existir, busca no banco
+    const { data, error } = await supabase
+      .from('projects')
+      .select('*')
+      .eq('id', parsedId)
+      .single()
+
+    if (error) {
+      console.error('Erro ao buscar projeto:', error)
       return null
     }
 
-    return projects.value.find((p) => p.id === parsedId) ?? null
+    return data
   }
 
   // ==============================
@@ -88,10 +100,9 @@ export const useProjectsStore = defineStore('projects', () => {
   // ==============================
   function getProjectStats(projectId) {
     const recordsStore = useRecordsStore()
-    const parsedId = Number(projectId)
 
     const projectRecords = recordsStore.records.filter(
-      (r) => r.projectId === parsedId
+      r => r.project_id === parseInt(projectId)
     )
 
     const totalRecords = projectRecords.length
@@ -107,10 +118,10 @@ export const useProjectsStore = defineStore('projects', () => {
   // 🔹 Deletar projeto
   // ==============================
   async function deleteProject(id) {
-    const parsedId = Number(id)
+    const parsedId = parseInt(id)
 
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user || Number.isNaN(parsedId)) return
+    if (!user) return
 
     const { error } = await supabase
       .from('projects')
@@ -123,7 +134,7 @@ export const useProjectsStore = defineStore('projects', () => {
       return
     }
 
-    projects.value = projects.value.filter((p) => p.id !== parsedId)
+    projects.value = projects.value.filter(p => p.id !== parsedId)
   }
 
   return {
