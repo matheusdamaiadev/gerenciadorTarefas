@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute, useRouter, RouterLink } from 'vue-router';
 import AppHeader from '@/components/layout/AppHeader.vue';
 import { useProjects } from '@/composables/useProjects';
@@ -10,28 +10,39 @@ const route = useRoute();
 const router = useRouter();
 const projectId = Number(route.params.id);
 
-const { getProject, getProjectStats, deleteProject } = useProjects();
-const { getRecordsByProject, deleteRecordsByProject } = useRecords();
+const projectsStore = useProjects();
+const recordsStore = useRecords();
+
+const { getProject, getProjectStats, deleteProject, fetchProjects } = projectsStore;
+const { getRecordsByProject, deleteRecordsByProject, loadRecords } = recordsStore;
+
+onMounted(async () => {
+  await Promise.all([fetchProjects(), loadRecords()]);
+});
 
 const project = computed(() => getProject(projectId));
 const stats = computed(() => getProjectStats(projectId));
-const records = computed(() => getRecordsByProject(projectId) || []); // garante array
+const records = computed(() => getRecordsByProject(projectId) || []);
 
-function handleDelete() {
+async function handleDelete() {
+  if (!project.value) {
+    return;
+  }
+
   if (confirm('Tem certeza que deseja excluir este projeto?')) {
-    deleteRecordsByProject(projectId); // remove registros
-    deleteProject(projectId); // remove projeto
-    router.back(); // volta para página anterior
+    await deleteRecordsByProject(projectId);
+    await deleteProject(projectId);
+    router.push('/projects');
   }
 }
 </script>
 
 <template>
   <div v-if="project" class="page">
-    <AppHeader 
-      title="Projetos" 
-      show-back 
-      @back="router.back()" 
+    <AppHeader
+      title="Projetos"
+      show-back
+      @back="router.back()"
     />
 
     <div class="project-header">
@@ -51,14 +62,13 @@ function handleDelete() {
       </div>
     </div>
 
-    <!-- Lista de registros -->
     <div v-if="records.length > 0">
       <RecordList :records="records" />
     </div>
     <div v-else class="empty">
       <p>📭</p>
       <p>Nenhum registro ainda</p>
-      <RouterLink 
+      <RouterLink
         :to="{ path: '/records/new/edit', query: { projectId } }"
         class="btn"
       >
@@ -77,6 +87,15 @@ function handleDelete() {
       <button class="delete-btn" @click="handleDelete">
         Excluir Projeto
       </button>
+    </div>
+  </div>
+
+  <div v-else class="page empty-state">
+    <AppHeader title="Projetos" show-back @back="router.back()" />
+    <div class="empty">
+      <p>📁</p>
+      <p>Projeto não encontrado</p>
+      <RouterLink to="/projects" class="btn">Voltar para projetos</RouterLink>
     </div>
   </div>
 </template>
@@ -112,7 +131,6 @@ function handleDelete() {
   font-size: 16px;
 }
 
-/* Stats */
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -137,7 +155,6 @@ function handleDelete() {
   color: var(--muted-text);
 }
 
-/* Mensagem vazio */
 .empty {
   text-align: center;
   padding: 60px 20px;
@@ -169,7 +186,6 @@ function handleDelete() {
   transform: translateY(-2px);
 }
 
-/* FAB */
 .fab {
   position: fixed;
   bottom: 28px;
@@ -199,7 +215,6 @@ function handleDelete() {
   transform: scale(0.9);
 }
 
-/* Botão de excluir projeto */
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -224,5 +239,9 @@ function handleDelete() {
 
 .delete-btn:active {
   transform: scale(0.95);
+}
+
+.empty-state {
+  justify-content: flex-start;
 }
 </style>

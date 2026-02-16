@@ -8,13 +8,12 @@ import { useRecords } from '@/composables/useRecords';
 const router = useRouter();
 const route = useRoute();
 
-const { addRecord, getRecord, updateRecord, categories } = useRecords();
+const { addRecord, getRecord, updateRecord, categories, loadRecords } = useRecords();
 
 const isEditMode = computed(() => route.params.id !== 'new');
 
-const projectIdFromQuery = route.query.projectId
-  ? Number(route.query.projectId)
-  : null;
+const parsedProjectId = Number(route.query.projectId);
+const projectIdFromQuery = Number.isNaN(parsedProjectId) ? null : parsedProjectId;
 
 const form = ref({
   title: '',
@@ -23,8 +22,12 @@ const form = ref({
   category: '',
 });
 
-onMounted(() => {
+onMounted(async () => {
   if (isEditMode.value) {
+    if (!getRecord(route.params.id)) {
+      await loadRecords();
+    }
+
     const record = getRecord(route.params.id);
     if (record) {
       form.value = {
@@ -39,16 +42,18 @@ onMounted(() => {
   }
 });
 
-function handleSubmit(data) {
+async function handleSubmit(data) {
   const recordData = {
     ...data,
-    projectId: projectIdFromQuery ?? null
+    projectId: projectIdFromQuery ?? null,
   };
 
-  if (isEditMode.value) {
-    updateRecord(route.params.id, recordData);
-  } else {
-    addRecord(recordData);
+  const result = isEditMode.value
+    ? await updateRecord(route.params.id, recordData)
+    : await addRecord(recordData);
+
+  if (!result) {
+    return;
   }
 
   if (projectIdFromQuery) {
@@ -88,8 +93,7 @@ function handleSubmit(data) {
   gap: 24px;
   font-family: 'Inter', sans-serif;
 }
-.form{
+.form {
   margin-top: 80px;
 }
-/* Se desejar, estilos adicionais podem ser aplicados aos formulários internos */
 </style>
